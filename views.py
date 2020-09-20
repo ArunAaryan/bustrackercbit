@@ -490,7 +490,7 @@ def fleetreport(request):
 			
 		
 		
-		return render(request,'fleet_report.html',{'buses':buses,'fleetdata':fleetdata })
+		return render(request,'fleet_report.html',{'busno':bno,'buses':buses,'fleetdata':fleetdata })
 	else:
 		s={'status':''}
 		return redirect('/')
@@ -520,7 +520,7 @@ def alertreport(request):
 			
 		
 		
-		return render(request,'alert_report.html',{'buses':buses,'alertdata':alertdata,'alertid':alertCode })
+		return render(request,'alert_report.html',{'busno':bno,'buses':buses,'alertdata':alertdata,'alertid':alertCode })
 	else:
 		s={'status':''}
 		return redirect('/')

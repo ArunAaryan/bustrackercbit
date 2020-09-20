@@ -96,7 +96,7 @@
             <h6 class="collapse-header">View Reports:</h6>
 			      <a class="collapse-item" href="{%url 'geofence_report'%}"  data-toggle="modal" data-target="#geo-report"  aria-expanded="true" aria-controls="collapseUtilities">GeoFence Report</a>
             <a class="collapse-item" href="{%url 'fleetreport'%}" data-toggle="modal" data-target="#fleetreport" aria-expanded="true" aria-controls="collapseUtilities">Fleet Report</a>
-            <a class="collapse-item" href="{%url 'fleetreport'%}" data-toggle="modal" data-target="#alertreport" aria-expanded="true" aria-controls="collapseUtilities">Alert Report</a>
+            <a class="collapse-item" href="{%url 'fleetreport'%}" data-toggle="modal" data-target="#alertreport" aria-expanded="true" aria-controls="collapseUtilities">Alerts Report</a>
           </div>
         </div>
       </li>
@@ -458,7 +458,7 @@
                     <div class="modal-dialog modal-dialog-centered" role="document">
                       <div class="modal-content">
                         <div class="modal-header">
-                          <h5 class="m-0 font-weight-bold text-primary">Alert Report</h5>
+                          <h5 class="m-0 font-weight-bold text-primary">Alerts Report</h5>
                           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span class="text">&times;</span>
                           </button>
@@ -484,7 +484,7 @@
                                                       <select class="form-control" id="alert-code" name="alertcode">
                                                           <option value="">Choose Alert</option>
                                                           <option value="ALL">ALL</option>
-                                                          <option value="0">0</option>
+                                                          <option value="0">No Alert</option>
                                                               <option value="1">Location Update</option>
                                                               <option value="2">Location Update(History)</option>
                                                               <option value="3">Disconnect From Main Battery</option>
