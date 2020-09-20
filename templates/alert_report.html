@@ -5,7 +5,7 @@ var d=[];
 function down(){
 		var date=new Date();
 		date=date.toString().substring(4, 15);
-		var name='geofence-report-'+date+'.xlsx';
+		var name='fleet-report-'+date+'.xlsx';
         alasql("SELECT * INTO XLSX(?,{headers:true}) FROM ? ",[name,d]);
 
 } 
@@ -60,9 +60,9 @@ function down(){
                   <thead class="thead-dark">
                     <tr>
                       <th scope="col">Sno </th>
-                      <th scope="col">IMEI </th>
+                      <th scope="col">IMEI Number</th>
                       <th scope="col">TimeStamp </th>
-                      <th scope="col">Alert</th>
+                      <th scope="col">Alert ID</th>
                     </tr>
                   </thead>
                   <tbody>
