@@ -8,7 +8,14 @@ function down(){
 		var name='fleetreport'+date+'.xlsx';
         alasql("SELECT * INTO XLSX(?,{headers:true}) FROM ? ",[name,d]);
 }
-
+function ac(val){
+    if(val==0){
+        return "OFF"
+    }
+    else {
+        return "ON"
+    }
+}
 function ignition(val){
     if(val==0){
         return "Ignition OFF"
@@ -90,6 +97,7 @@ function sos(val){
                     <tr>
                       <th scope="col">Sno </th>
                       <th scope="col">AC </th>
+                      <th scope="col">Date&Time </th>
                       <th scope="col">Internal Battery Voltage </th>
                       <th scope="col"> Ignition Status </th>
                       <th scope="col"> Mains Power </th>
@@ -103,11 +111,17 @@ function sos(val){
                  
                   {% for i in fleetdata %}
                     <tr>
-					<script> d.push({'Sno':{{ forloop.counter }},'AC':'{{ i.ac }}','Internal Battery Voltage':'{{i.battery_voltage}}',
+					<script> d.push({'Sno':{{ forloop.counter }},'AC':ac({{ i.ac }}),'timestamp':'{{i.upd_datetime}}','Internal Battery Voltage':'{{i.battery_voltage}}',
                     'Ignition Status':ignition({{i.ignition_status}}), 'Mains Power':mainsf({{i.mains_power}}),'Mains Voltage':'{{i.mains_voltage}}',
                     'SOS Status':sos({{i.sos_alert}}),'Speed':'{{i.speed}}','Alert ID':'{{i.alert_id}}'}) </script>
                       <th scope="row">{{forloop.counter }}</th>
-                      <td>{{i.ac}}</td>
+                      {% if i.ac == 0 %}
+                        <td>OFF</td>
+                        {% else %}
+                        <td>ON</td>
+                        {% endif %}
+
+                        <td>{{i.upd_datetime}}</td>
                       <td>{{i.battery_voltage}}</td>
 
                       {% if i.ignition_status == 0 %}
@@ -122,8 +136,8 @@ function sos(val){
                         <td>Connected</td>
                         {% endif %}
 
-                      <td>{{i.sos_alert}}</td>
-                      {% if i.mains_power == 0 %}
+                      <td>{{i.mains_voltage}}</td>
+                      {% if i.sos_alert == 0 %}
                         <td>OFF</td>
                         {% else %}
                         <td>ON</td>
