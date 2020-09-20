@@ -1,0 +1,196 @@
+{%extends 'base.html'%} {% load static %} {%block title%} GeoFence {%endblock%}{%block geo%}active{%endblock%} {%block onload%}{%endblock%} {%block main%}
+<script>
+function worker() {
+  $.ajax({
+    url: '/home/track-refresh/', 
+	type: 'GET',
+    success: function(data,textStatus,request) {
+console.log('ok');
+img="{% static 'markers/Bus.png' %}"
+for (var i = 0; i < data.length; i++) {
+var im=(data[i]['IMEI']).toString();
+var lat = parseFloat(data[i]['latitude']);
+var lng = parseFloat(data[i]['longitude']);
+var pos={lat:lat ,lng:lng};
+var k=data[i]['routeId'];
+var speed=data[i]['speed'];
+var ind=mIMEI.indexOf(im);
+if(ind==-1){
+console.log('new');
+marker = new google.maps.Marker({
+map: map,
+icon:img,
+position: pos,
+label:''+k,                      
+});
+markers.push(marker);
+var infowindow = new google.maps.InfoWindow({
+content: '<p>Latitude: ' +lat + '</p>'+
+		  '<p>Longitude: '+lng + '</p>'
+		  
+});
+myFunctinForListener(marker, infowindow);
+}
+else{
+if(JSON.stringify(d[im])!==JSON.stringify(pos)){
+console.log('update');
+markers[ind].setMap(null)
+marker = new google.maps.Marker({
+map: map,
+icon:img,
+position: pos,
+label:''+k,                      
+});
+d[im]=pos;
+markers[ind]=marker;
+var infowindow = new google.maps.InfoWindow({
+content: '<p>Latitude:' +lat + '</p>'+
+		  '<p>Longitude'+lng + '</p>'
+		  
+});
+myFunctinForListener(marker, infowindow);
+}
+}
+
+}
+
+},
+complete: function() {
+  // Schedule the next request when the current one's complete
+  setTimeout(worker, 100000);
+},
+});
+}
+</script>
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+        <!-- Page Heading -->
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800"></h1>
+        </div>
+        <!-- Content Row -->
+
+        <div class="row">
+
+            <!-- Map -->
+            <div class="col-xl-12 col-lg-7">
+                <div class="card shadow mb-4">
+                    <!-- Card Header - Dropdown -->
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary" style="flex: 1;">GeoFence</h6>
+                  
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                        <div class="dropdown-header">Dropdown Header:</div>
+                        <a id="actn" class="dropdown-item" href="#">Action</a>
+                        <a class="dropdown-item" href="#">Another action</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#">Something else here</a>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Card Body -->
+            <div class="card-body map-container z-depth-1-half" style="height: 500px; padding: 0;">
+                <!--The div element for the map -->
+                <div id="map" style="width: auto; height: 500px;"></div>
+                 <script>
+                        var buslocs = {};var markers=[];var pos=[];var d={};var mIMEI=[];
+                        					var map;
+                                   var path = JSON.parse('[{"lat":17.392993,"lng":78.321499},{"lat":17.394380,"lng":78.319181},{"lat":17.393592,"lng":78.318103},{"lat":17.389937,"lng":78.317213},{"lat":17.389174,"lng":78.320316}]');
+function initMap() {
+                        var location = {lat:17.3920,lng:78.3194}
+                        map = new google.maps.Map(document.getElementById('map'), {
+                          zoom: 17,
+                          center: location
+                        });
+                        var markerc = new google.maps.Marker({
+                          map: map,
+                          position:location,
+                          icon:"{% static 'markers/pin1.png' %}",                   
+                        });
+                        myFunctinForListener = function(aMarker, aInfoWindow) {
+                          google.maps.event.addListener(aMarker, 'click', function() {                          
+                            aInfoWindow.open(map, aMarker);
+                          });
+                        }
+                        img="{% static 'markers/Bus.png' %}"
+                        {% for i in tracking %}
+						  var imei='{{i.IMEI}}';
+						  mIMEI.push(imei)
+                          var lat = parseFloat('{{i.latitude}}');
+                          var lng = parseFloat('{{i.longitude}}');
+					      var pos={lat:lat ,lng:lng};
+                          var k='{{i.routeId}}';
+						  d[imei]=pos;
+                          marker = new google.maps.Marker({
+                            map: map,
+                            icon:img,
+                            position: pos,
+                            //url:'http://127.0.0.1:8000/home/Bus-'+'{{i.routeId}}',
+                            label:'{{i.routeId}}',                      
+                          });
+						  markers.push(marker);
+                          var infowindow = new google.maps.InfoWindow({
+content: '<p>Latitude: ' +lat + '</p>'+
+		  '<p>Longitude: '+lng + '</p>'
+		  
+});
+                          myFunctinForListener(marker, infowindow);
+                        {% endfor %}
+                                      //Fence
+									  var drawingManager = new google.maps.drawing.DrawingManager({
+                                              drawingControl: true,
+                                              drawingControlOptions: {
+                                                position: google.maps.ControlPosition.TOP_CENTER,
+                                                drawingModes: ['polyline']
+                                              }
+                                             });
+                                            //drawingManager.setMap(map);
+                                            var pathBetween1 = new google.maps.Polygon({
+                                              path: path,
+                                              strokeColor: '#4E73DF',
+                                              fillColor: '#4E73DF',
+                                              strokeOpacity: 0.8,
+                                              strokeWeight: 3,
+                                              fillOpacity: 0.2
+                                            });
+                                            pathBetween1.setMap(map);
+                                            var polylines = [];
+                                            google.maps.event.addListener(drawingManager, 'polylinecomplete', function(polyline) {
+                                              polylines.push(polyline);
+                                              var polylinePath = polyline.getPath();
+                                              for (var i = 0; i < polylinePath.getArray().length; i++) {
+                                                polyarray.push('{"lat":'+polylinePath.getArray()[i].lat() + ', "lng":' + polylinePath.getArray()[i].lng() + '}');
+                                              }
+                                            });
+                        						setTimeout(worker,500000);
+                                          }
+                    </script>
+                <script async differ type="text/javascript" 
+                src="https://maps.googleapis.com/maps/api/js?key=AIzaSyArbAIIe2DNFzV8bWdqno7S-9UcZmMlkos&libraries=drawing&callback=initMap">
+                </script>
+            </div>
+        </div>
+    </div>
+
+    <!-- End of Main Content -->
+
+      <!-- Footer was here-->
+
+    </div>
+    <!-- End of Content Wrapper -->
+
+  </div>
+  <!-- End of Page Wrapper -->
+
+
+
+
+  
+    
+{%endblock%}

@@ -1,0 +1,172 @@
+{%extends 'base.html'%}
+{% load static %}
+{%block title%}
+CBIT Bus Tracking Dashboard
+{%endblock%}
+{%block main%}
+<!-- Begin Page Content -->
+<div class="container-fluid">
+
+    <!-- Content Row -->
+    <div class="row">
+      <!-- card 1 -->
+      <div class="col-xl-4">
+        <div class="card shadow mb-4" style="height: 555px;">
+          <!-- Card Header - Dropdown -->
+          <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary" style="flex: 1;">Buses List</h6>
+            <div class="dropdown no-arrow">
+              <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+              </a>
+              <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                <div class="dropdown-header">Dropdown Header:</div>
+                <a class="dropdown-item" href="#">Action</a>
+                <a class="dropdown-item" href="#">Another action</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="#">Something else here</a>
+              </div>
+            </div>
+          </div>
+          <!-- Card Body -->
+          <div class="card-body z-depth-1-half" style="height: 500px; padding: 0; overflow: scroll;">
+            <div class='m-2 mt-3'>
+              <div class='text-muted m-2'>
+                Select All
+                <span class='' style="width: fit-content; float: right;">
+                  <input class="" id="select-all" type="checkbox">
+                </span>
+            </div>
+            </div>
+            <ul class="m-2 list-group mt-3">
+              {% for i in buses %}
+              <li class='d-flex justify-content-between lh-condensed m-2'>
+                <div>
+                  <h6 class='my-0 font-weight-bold'>Bus - {{ i.routeId }} </h6>
+                  <small class='text-muted'>{{ i.routeName }}</small>
+                </div>
+                <span class=''>
+                  <input class="selected-bus" id="" type="checkbox" name="selected-bus" value=" Bus - {{ i.routeId }}">
+                </span>
+              </li>
+              {% endfor %}
+          </ul>
+          </div>
+        </div>
+      </div>
+      <!-- card 2 -->
+      <div class="col-xl-8">
+        <div class="card shadow mb-4">
+          <!-- Card Header - Dropdown -->
+          <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary" style="flex: 1;">Message</h6>
+            <div class="dropdown no-arrow">
+              <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+              </a>
+              <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                <div class="dropdown-header">Dropdown Header:</div>
+                <a class="dropdown-item" href="#">Action</a>
+                <a class="dropdown-item" href="#">Another action</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="#">Something else here</a>
+              </div>
+            </div>
+          </div>
+          <!-- Card Body -->
+          <div class="card-body z-depth-1-half" style="height: 500px; padding: 0;">
+            <form method="post" id="myForm" action="{%url 'buses'%}">
+                              {% csrf_token %}
+            <div class="col-md-12 mt-3 d-flex justify-content-start align-items-center">
+              <label class="m-0" for="selected-buses" style="width: 100px;padding-right: 10px;">To</label>
+              <input type="text" name="lis" id="selected-buses" class="form-control" placeholder=" Select Busses From the List"   required="" >
+            </div>
+            <div class="col-md-12 mt-3 d-flex justify-content-start align-items-center">
+              <label class="m-0" for="selected-buses" style="width: 100px;padding-right: 10px;">Message</label>
+              <input type="text" name="mess" class="form-control" placeholder=" Your message here..."  required="">
+
+            </div>
+            <div class="col-md-12 mt-3 d-flex justify-content-end align-items-center">  
+              <button class="btn btn-primary m-2" onclick="display()" type="submit" style="margin-right: 20px;">
+                <span class="text m-0">Send</span>
+              </button>
+              
+            </div>
+          </form>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    <!-- End of Main Content -->
+    <script>
+      var id = new Set(); 
+      $('#select-all').click(function(event) {   
+          if(this.checked) {
+              // Iterate each checkbox
+              $(':checkbox').each(function() {
+                  this.checked = true;      
+
+                                   
+              });
+              document.getElementById('selected-buses').setAttribute("placeholder", "All Busses")
+
+          }
+           else {
+              $(':checkbox').each(function() {
+
+                  this.checked = false;   
+                                 
+              });
+              document.getElementById('selected-buses').setAttribute("placeholder", " Select Busses From the List")
+          }
+      });
+      $(".selected-bus").click(function(){
+        var selectedList = [];
+        $.each($("input[name='selected-bus']:checked"), function(){
+          selectedList.push($(this).val());
+
+          
+        });
+        if(selectedList.length == 0){
+          document.getElementById('selected-buses').setAttribute("placeholder", " Select Busses From the List")
+        }
+        else{
+          console.log(selectedList);
+          document.getElementById('selected-buses').setAttribute("placeholder", selectedList)
+        }
+      });
+
+function display() {
+  
+  $(':checkbox').each(function() {
+
+                  if(this.checked ==true)      
+                       {
+                        if($(this).val()!='on' )
+                        {id.add($(this).val());
+                    }
+                      }           
+              });
+  var i;
+  var text="";
+      id.forEach(function display(value,id)   
+{  
+  
+text+= value+',';
+})  
+
+
+document.getElementById("selected-buses").value =text ;
+  
+}
+
+
+      
+    </script>
+    
+    
+    
+
+  </div>
+{%endblock%}

@@ -1,0 +1,288 @@
+{%extends 'base.html'%}
+{% load static %}
+{%block title%}
+CBIT Bus Tracking Dashboard
+{%endblock%}
+{%block home%}active{%endblock%}
+{%block main%}
+<script>
+function reLoad() {
+  $.ajax({
+    url: '/home/track-refresh/', 
+	type: 'GET',
+    success: function(data,textStatus,request) {
+console.log('ok');
+window.localStorage.setItem('cur',0);
+window.localStorage.setItem('maxi',data.length-1);
+var indices=[];
+img="{% static 'markers/Bus.png' %}"
+for (var i = 0; i < data.length; i++) {
+var im=(data[i]['imei']).toString();
+var lat = parseFloat(data[i]['latitude']);
+var lng = parseFloat(data[i]['longitude']);
+if(data[i]['mains_power']==1){
+data[i]['mains_power']='green';
+}
+else{
+data[i]['mains_power']='red';
+}
+if(data[i]['ignition_status']==1){
+data[i]['ignition_status']='green';
+var stat="Active"
+}
+else{
+data[i]['ignition_status']='red';
+var stat="Stopped"
+}
+if(data[i]['gps_fix']==1){
+data[i]['gps_fix']='green';
+}
+else{
+data[i]['gps_fix']='red';
+}
+if(data[i]['ac']==1){
+data[i]['ac']='green';
+}
+else{
+data[i]['ac']='red';
+}
+var pos={lat:lat ,lng:lng};
+var k=data[i]['routeId'];
+var speed=data[i]['speed'];
+var ind=mIMEI.indexOf(im);
+if(ind==-1){
+marker = new google.maps.Marker({
+map: map,
+icon:img,
+position: pos,
+label:''+k,                      
+});
+markers.push(marker);
+indices.push(markers.length-1)
+geocoder.geocode({ location: pos }, (results, status) => {
+                                if (status === "OK") {
+                                  if (results[0]) {
+								  var i=parseInt(window.localStorage.getItem('cur'));
+								  var indices = JSON.parse(window.localStorage.getItem("indices"));
+                  consoe.log("time");
+                                    var infowindow = new google.maps.InfoWindow({
+									content: '<table class="table" cellpadding="5" style="text-align:center;  font-size: 0.9em;">'+
+                                                  '<tr><td colspan="5" ><i class="fa fa-bus" aria-hidden="true"></i>&nbsp;&nbsp;'+data[i]['imei']+'</td></tr>'+
+                                                  '<tr><td colspan="5"><i class="fa fa-map-marker" aria-hidden="true"></i>&nbsp;&nbsp;'+results[0].formatted_address+'</td></tr>'+
+                                                  '<tr><td colspan="4"> <i class="fa fa-user-circle" aria-hidden="true"></i>&nbsp;&nbsp;'+data[i]['driverName']+'</td><td rowspan="3" class="text-center text-white bg-warning rounded" style="font-size:16px;"><h3>'+data[i]['speed']+'</h3>KMPH</td></tr>'+
+                                                  '<tr><td colspan="4"> <i class="fa fa-mobile" aria-hidden="true"></i>&nbsp;&nbsp;'+data[i]['driverPhone']+'</td></tr>'+
+                                                  '<tr><td><i class="fa fa-circle" aria-hidden="true" style="color:'+data[i]['ignition_status'].toString()+';font-size: 0.7em;"></i>&nbsp;&nbsp;IGN </td><td><i class="fa fa-circle" aria-hidden="true" style="color:'+data[i]['mains_power'].toString()+';font-size: 0.7em;"></i>&nbsp;&nbsp;POW </td><td><i class="fa fa-circle" aria-hidden="true" style="color:'+data[i]['ac'].toString()+';font-size: 0.7em;"></i>&nbsp;&nbsp;AC </td><td><i class="fa fa-circle" aria-hidden="true" style="color:'+data[i]["gps_fix"].toString()+';font-size: 0.7em;"></i>&nbsp;&nbsp;GPS</td></tr>'+
+                                                  '<tr><td colspan="1"> <i  class="fa fa-circle" aria-hidden="true" style="color:'+data[i]['ignition_status'].toString()+';font-size: 0.7em;"></i>&nbsp;'+stat+'</td>'+
+                                                  '<td colspan="2"> <i class="fa fa-clock-o" aria-hidden="true"></i>&nbsp;&nbsp;@ '+data[i]['updatedTime']+'</td>'+
+                                                  '<td colspan="2"><i class="fa fa-location-arrow" aria-hidden="true">&nbsp;&nbsp;</i><a href = "/home/Bus-'+ k +'">Live Tracking </a></td></tr>'+
+                                                  '</table>'
+                                    });
+                                    myFunctinForListener(markers[indices[i]], infowindow);
+									window.localStorage.setItem('cur',i+1);
+                                  }
+                                }
+                          });
+
+
+}
+else{
+console.log(JSON.stringify(d[im]),JSON.stringify(pos))
+if(JSON.stringify(d[im])!==JSON.stringify(pos)){
+console.log('update');
+markers[ind].setMap(null)
+marker = new google.maps.Marker({
+map: map,
+icon:img,
+position: pos,
+label:''+k,                      
+});
+d[im]=pos;
+markers[ind]=marker;
+indices.push(ind);
+geocoder.geocode({ location: pos }, (results, status) => {
+                                if (status === "OK") {
+                                  if (results[0]) {
+								  var i=parseInt(window.localStorage.getItem('cur'));
+									var indices = JSON.parse(window.localStorage.getItem("indices"));
+									var infowindow = new google.maps.InfoWindow({
+									content: '<table class="table" cellpadding="5" style="text-align:center;  font-size: 0.9em;">'+
+                                                  '<tr><td colspan="5" ><i class="fa fa-bus" aria-hidden="true"></i>&nbsp;&nbsp;'+data[i]['imei']+'</td></tr>'+
+                                                  '<tr><td colspan="5"><i class="fa fa-map-marker" aria-hidden="true"></i>&nbsp;&nbsp;'+results[0].formatted_address+'</td></tr>'+
+                                                  '<tr><td colspan="4"> <i class="fa fa-user-circle" aria-hidden="true"></i>&nbsp;&nbsp;'+data[i]['driverName']+'</td><td rowspan="3" class="text-center text-white bg-warning rounded" style="font-size:16px;"><h3>'+data[i]['speed']+'</h3>KMPH</td></tr>'+
+                                                  '<tr><td colspan="4"> <i class="fa fa-mobile" aria-hidden="true"></i>&nbsp;&nbsp;'+data[i]['driverPhone']+'</td></tr>'+
+                                                  '<tr><td><i class="fa fa-circle" aria-hidden="true" style="color:'+data[i]['ignition_status'].toString()+';font-size: 0.7em;"></i>&nbsp;&nbsp;IGN </td><td><i class="fa fa-circle" aria-hidden="true" style="color:'+data[i]['mains_power'].toString()+';font-size: 0.7em;"></i>&nbsp;&nbsp;POW </td><td><i class="fa fa-circle" aria-hidden="true" style="color:'+data[i]['ac'].toString()+';font-size: 0.7em;"></i>&nbsp;&nbsp;AC </td><td><i class="fa fa-circle" aria-hidden="true" style="color:'+data[i]["gps_fix"].toString()+';font-size: 0.7em;"></i>&nbsp;&nbsp;GPS</td></tr>'+
+                                                  '<tr><td colspan="1"> <i  class="fa fa-circle" aria-hidden="true" style="color:'+data[i]['ignition_status'].toString()+';font-size: 0.7em;"></i>&nbsp;'+stat+'</td>'+
+                                                  '<td colspan="2"> <i class="fa fa-clock-o" aria-hidden="true"></i>&nbsp;&nbsp;@ '+data[i]['updatedTime']+'</td>'+
+                                                  '<td colspan="2"><i class="fa fa-location-arrow" aria-hidden="true">&nbsp;&nbsp;</i><a href = "/home/Bus-'+ k +'">Live Tracking </a></td></tr>'+
+                                                  '</table>'
+                                    });
+									
+                                    myFunctinForListener(markers[indices[i]], infowindow);
+									window.localStorage.setItem('cur',i+1);
+                                  }
+                                }
+                          });
+}
+}
+
+}
+window.localStorage.setItem("indices", JSON.stringify(indices));
+
+
+},
+complete: function() {
+  // Schedule the next request when the current one's complete
+  setTimeout(reLoad, 100000);
+},
+});
+}
+</script>
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+          <!-- Content Row -->
+          <div class="row">
+
+            <!-- Map Chart -->
+            <div class="col-xl-12 col-lg-7">
+              <div class="card shadow mb-4">
+                <!-- Card Header - Dropdown -->
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                  <h6 class="m-0 font-weight-bold text-primary" style="flex: 1;">Bus Routes</h6>
+                  <!-- <a href="#" id="alert-btn" class="btn btn-danger btn-icon-split" style="margin-right: 20px;">
+                    <span class="icon text-white-50">
+                      <i class="fas fa-bell"></i>
+                    </span>
+                    <span class="text">Alert</span>
+                  </a> -->
+                  
+                  <a href="#" id="popup-btn" class="btn btn-primary btn-icon-split" data-toggle="modal" data-target="#bus-list" style="margin-right: 20px;">
+                    <span class="icon text-white-50">
+                      <i class="fas fa-bus"></i>
+                    </span>
+                    <span class="text">Buses</span>
+                  </a>
+                  <div class="dropdown no-arrow">
+                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                      <div class="dropdown-header">Dropdown Header:</div>
+                      <a class="dropdown-item" href="#">Action</a>
+                      <a class="dropdown-item" href="#">Another action</a>
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="#">Something else here</a>
+                    </div>
+                  </div>
+                </div>
+                <!-- Card Body -->
+                <div class="card-body map-container z-depth-1-half" style="height: 500px; padding: 0;">
+                    <!--The div element for the map -->
+                    <div id="map" style="width: auto; height: 500px;"></div>
+                    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"> 
+                    </script>
+                    <script>
+                      // Initialize and add the map
+					  var geocoder;var myFunctinForListener;var myFunctinForListener1;var map;var markers=[];var d={};var mIMEI=[];
+                      function initMap() {
+                        var location = {lat:17.3920,lng:78.3194}
+                        map = new google.maps.Map(document.getElementById('map'), {
+                          zoom: 11,
+                          center: location
+                        });
+                        var markerc = new google.maps.Marker({
+                          map: map,
+                          position:location,
+                          icon:"{% static 'markers/pin1.png' %}",                   
+                        });
+                        myFunctinForListener = function(aMarker, aInfoWindow) {
+                          google.maps.event.addListener(aMarker, 'click', function() {                          
+                            aInfoWindow.open(map, aMarker);
+                          });
+                        }
+                        myFunctinForListener1 = function(aMarker) {
+                          google.maps.event.addListener(aMarker, 'dblclick', function() {
+							var l=this.label
+                            window.location.href = "/home/Bus-"+l;     
+
+                             
+                        });
+                      }
+                        img="{% static 'markers/Bus.png' %}"
+						var indices=[]
+						geocoder = new google.maps.Geocoder();
+                        {% for i in track_liv %}
+						  var imei='{{i.imei}}';
+						  mIMEI.push(imei)
+                          var lat = parseFloat('{{i.latitude}}');
+                          var lng = parseFloat('{{i.longitude}}');
+					      var pos={lat:lat ,lng:lng};
+                          var k='{{i.routeId}}';
+						  d[imei]=pos;
+                          marker = new google.maps.Marker({
+                            map: map,
+                            icon:img,
+                            position: pos,
+                            //url:'http://127.0.0.1:8000/home/Bus-'+'{{i.routeId}}',
+                            label:'{{i.routeId}}',                      
+                          });
+						  markers.push(marker);
+						  indices.push(markers.indexOf(marker))
+						  geocoder.geocode({ location: pos }, (results, status) => {
+                                if (status === "OK") {
+                                  if (results[0]) {
+								  var indices=JSON.parse(window.localStorage.getItem("indices"));
+								  var i=parseInt(window.localStorage.getItem("cur"));
+                                    var infowindow = new google.maps.InfoWindow({
+                                         content: '<table class="table" cellpadding="5" style="text-align:center;  font-size: 0.9em;">'+
+                                                  '<tr><td colspan="5" ><i class="fa fa-bus" aria-hidden="true"></i>&nbsp;&nbsp;{{i.imei}}</td></tr>'+
+                                                  '<tr><td colspan="5"><i class="fa fa-map-marker" aria-hidden="true"></i>&nbsp;&nbsp;'+results[0].formatted_address+'</td></tr>'+
+                                                  '<tr><td colspan="4"> <i class="fa fa-user-circle" aria-hidden="true"></i>&nbsp;&nbsp{{i.driverName}}</td><td rowspan="3" class="text-center text-white bg-warning rounded pt-4" style="font-size:16px;"><h3>{{i.speed}}</h3>KMPH</td></tr>'+
+                                                  '<tr><td colspan="4"> <i class="fa fa-mobile" aria-hidden="true"></i>&nbsp;&nbsp;{{i.driverPhone}}</td></tr>'+
+                                                  '<tr><td>{% if i.ignition_status == 1 %}<i class="fa fa-circle" aria-hidden="true" style="color:green;font-size: 0.7em;"></i>{% else %}<i class="fa fa-circle" aria-hidden="true" style="color:red;font-size: 0.7em;"></i>{% endif %}&nbsp;&nbsp;IGN </td><td>{% if i.mains_power == 1 %}<i class="fa fa-circle" aria-hidden="true" style="color:green;font-size: 0.7em;"></i>{% else %}<i class="fa fa-circle" aria-hidden="true" style="color:red;font-size: 0.7em;"></i>{% endif %}&nbsp;&nbsp;POW </td><td>{% if i.ac == 1 %}<i class="fa fa-circle" aria-hidden="true" style="color:green;font-size: 0.7em;"></i>{%else%}<i class="fa fa-circle" aria-hidden="true" style="color:red;font-size: 0.7em;"></i>{%endif%}&nbsp;&nbsp;AC </td><td>{% if i.gps_fix == 1%}<i class="fa fa-circle" aria-hidden="true" style="color:green;font-size: 0.7em;"></i>{%else%}<i class="fa fa-circle" aria-hidden="true" style="color:red;font-size: 0.7em;"></i>{%endif%}&nbsp;&nbsp;GPS</td></tr>'+
+                                                  '<tr><td colspan="1"> {% if i.ignition_status == 1%}<i  class="fa fa-circle" aria-hidden="true" style="color:green;font-size: 0.7em;"></i>&nbsp;Active{% else %}<i  class="fa fa-circle" aria-hidden="true" style="color:red;font-size: 0.7em;"></i> &nbsp;Stopped{% endif %}</td>'+
+                                                  '<td colspan="2"> <i class="fa fa-clock-o" aria-hidden="true"></i>&nbsp;&nbsp;@ {{i.updatedTime}}</td>'+
+                                                  '<td colspan="2"><i class="fa fa-location-arrow" aria-hidden="true">&nbsp;&nbsp;</i><a href = "/home/Bus-'+ k +'">Live Tracking </a></td></tr>'+
+                                                  '</table>'
+                                    });
+                                    myFunctinForListener(markers[indices[i]], infowindow);
+									window.localStorage.setItem("cur",i+1)
+                                  }
+                                }
+                          });
+                       
+                         
+                        {% endfor %}
+						window.localStorage.setItem("indices", JSON.stringify(indices));
+						window.localStorage.setItem("cur",0);
+						//setTimeout(refresh,10000);
+						setTimeout(reLoad,10000);
+                      }
+                    </script>
+                    <script async differ type="text/javascript" 
+                src="https://maps.googleapis.com/maps/api/js?key=AIzaSyArbAIIe2DNFzV8bWdqno7S-9UcZmMlkos&libraries=drawing&callback=initMap">
+                </script>
+                  </div>
+                </div>
+              </div>
+
+              <!--popupwas here-->
+              
+      <!-- End of Main Content -->
+
+      
+
+    </div>
+    <!-- End of Content Wrapper -->
+    <script>
+      sessionStorage.setItem('access','true')
+      if(String({{rme}})!=''){
+        localStorage.setItem('rme','{{rme}}')
+      }
+    </script>
+  </div>
+  <!-- End of Page Wrapper -->
+
+
+
+{%endblock%}

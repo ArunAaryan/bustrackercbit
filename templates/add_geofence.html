@@ -1,0 +1,136 @@
+{%extends 'base.html'%} {% load static %} {%block title%} Add GeoFence {%endblock%} {%block onload%}{%endblock%}
+{%block main%}
+
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+        <!-- Page Heading -->
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800"></h1>
+        </div>
+        <!-- Content Row -->
+
+        <div class="row">
+
+            <!-- Map -->
+            <div class="col-xl-12 col-lg-7">
+                <div class="card shadow mb-4">
+                    <!-- Card Header - Dropdown -->
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary" style="flex: 1;">Add GeoFence - {{busnum}}</h6>
+                    <button id="savecoord" class="btn btn-primary btn-icon-split" style="margin-right: 20px;"onclick="undoPath()">
+                        <span class="text">Undo</span>
+                    </button>
+					<button id="savecoord" class="btn btn-primary btn-icon-split" style="margin-right: 20px;"onclick="sendCoordinates()">
+                        <span class="text">Save</span>
+                    </button>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                        <div class="dropdown-header">Actions:</div>
+                        <a class="dropdown-item" href="#"  id="add" data-toggle="modal" data-target="#add_geofence_list">Add Another GeoFence</a>
+						</div>
+                </div>
+            </div>
+        
+		<div class="card-body map-container z-depth-1-half" style="height: 500px; padding: 0;">
+                <!--The div element for the map -->
+                <div id="map" style="width: auto; height: 500px;"></div>
+    <script>
+        var URL = "{% url 'add_geofence' %}";
+        // This example requires the Drawing library. Include the libraries=drawing
+        // parameter when you first load the API. For example:
+        // <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=drawing">
+        var polyarray = [];
+        var polylinePath;
+        function initMap() {
+            var map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 17.3850, lng: 78.4867 },
+                zoom: 12
+            });
+
+            var drawingManager = new google.maps.drawing.DrawingManager({
+                drawingMode: google.maps.drawing.OverlayType.MARKER,
+                drawingControl: true,
+                drawingControlOptions: {
+                    position: google.maps.ControlPosition.TOP_CENTER,
+                    drawingModes: ['polyline']
+                },
+                markerOptions: { icon: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png' },
+                circleOptions: {
+
+                    clickable: false,
+                    editable: true,
+                    zIndex: 1,
+                    strokeColor: '#4E73DF',
+                    fillColor: '#4E73DF',
+                    strokeOpacity: 0.8,
+                    strokeWeight: 3,
+                    fillOpacity: 0.2
+                }
+            });
+            drawingManager.setMap(map);
+            google.maps.event.addListener(drawingManager, 'overlaycomplete', function (event) {
+                if (event.type == 'polyline') {
+                    polylinePath = event.overlay.getPath();
+
+                }
+                for (var i = 0; i < polylinePath.getArray().length; i++) {
+                    var temp = [];
+                    temp.push(polylinePath.getArray()[i].lat())
+                    temp.push(polylinePath.getArray()[i].lng())
+                    polyarray.push(temp);
+             }
+            });
+        }
+
+        function sendCoordinates()
+            {
+                var myJSONText = JSON.stringify(polyarray);
+                $.ajax({
+                    type: "POST",
+                    url: "{%url 'add_geofence'%}",
+                    data: { polyarray: myJSONText, bno: "{{ busnum}}" },
+                    success: function () {
+                        alert("Geo-Fence Saved");
+                    }
+                });
+            }
+        
+        function undoPath()
+        {
+            len = polyarray.length
+            polyarray.pop();
+            polylinePath.setAt(len-1, polyarray[len - 1]);
+            polylinePath.removeAt(len-1);
+        }
+
+        function updatePieFact() {
+            var data = { 'pieFact': pieFact };
+            $.post(URL, data, function (response) {
+                if (response === 'success') { alert('Yay!'); }
+                else { alert('Error! :('); }
+            });
+        }
+    </script>
+    <script async differ type="text/javascript" 
+                src="https://maps.googleapis.com/maps/api/js?key=AIzaSyArbAIIe2DNFzV8bWdqno7S-9UcZmMlkos&libraries=drawing&callback=initMap">
+                </script>
+</div>
+        </div>
+    </div>
+
+    <!-- End of Main Content -->
+
+      <!-- Footer was here-->
+
+    </div>
+    <!-- End of Content Wrapper -->
+
+  </div>
+  <!-- End of Page Wrapper -->
+
+    
+{%endblock%}

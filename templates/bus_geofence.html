@@ -1,0 +1,177 @@
+{%extends 'base.html'%} {% load static %} {%block title%} View Geo-Fence {%endblock%} {%block onload%}{%endblock%} {%block main%}
+<script>
+function worker() {
+  $.ajax({
+    url: '/home/track-refresh/', 
+	type: 'GET',
+    success: function(data,textStatus,request) {
+console.log('ok');
+img="{% static 'markers/Bus.png' %}"
+for (var i = 0; i < data.length; i++) {
+var im=(data[i]['IMEI']).toString();
+var lat = parseFloat(data[i]['latitude']);
+var lng = parseFloat(data[i]['longitude']);
+var pos={lat:lat ,lng:lng};
+var k=data[i]['routeId'];
+var speed=data[i]['speed'];
+var ind=mIMEI.indexOf(im);
+if(ind==-1){
+  if(k == {{ busnum }})
+  {
+    marker = new google.maps.Marker({
+    map: map,
+    icon:img,
+    position: pos,
+    label:''+k,                      
+    });
+    markers.push(marker);
+    var infowindow = new google.maps.InfoWindow({
+    content: '<p>Latitude:' +lat + '</p>'+
+          '<p>Longitude'+lng + '</p>'
+          
+    });
+    myFunctinForListener(marker, infowindow);
+  }
+}
+else{
+if(JSON.stringify(d[im])!==JSON.stringify(pos)){
+console.log('update');
+markers[ind].setMap(null)
+marker = new google.maps.Marker({
+map: map,
+icon:img,
+position: pos,
+label:''+k,                      
+});
+d[im]=pos;
+markers[ind]=marker;
+var infowindow = new google.maps.InfoWindow({
+content: '<p>Latitude:' +lat + '</p>'+
+		  '<p>Longitude'+lng + '</p>'
+		  
+});
+myFunctinForListener(marker, infowindow);
+}
+}
+
+}
+
+},
+complete: function() {
+  // Schedule the next request when the current one's complete
+  setTimeout(worker, 10000);
+},
+});
+}
+</script>
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+        <!-- Page Heading -->
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800"></h1>
+        </div>
+        <!-- Content Row -->
+
+        <div class="row">
+
+            <!-- Map -->
+            <div class="col-xl-12 col-lg-7">
+                <div class="card shadow mb-4">
+                    <!-- Card Header - Dropdown -->
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary" style="flex: 1;">View GeoFence - {{busnum}}</h6>
+                    <a href="#" id="view" class="btn btn-primary btn-icon-split" data-toggle="modal" data-target="#view_geofence_list" style="margin-right: 20px;">
+                        <span class="icon text-white-50">
+                            <i class="fas fa-globe"></i>
+                        </span>
+                        <span class="text">View GeoFence</span>
+                    </a>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                        <div class="dropdown-header">Dropdown Header:</div>
+                        <a id="actn" class="dropdown-item" href="#">Action</a>
+                        <a class="dropdown-item" href="#">Another action</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#">Something else here</a>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Card Body -->
+            <div class="card-body map-container z-depth-1-half" style="height: 500px; padding: 0;">
+                <!--The div element for the map -->
+                <div id="map" style="width: auto; height: 500px;"></div>
+                 <script>
+                        var buslocs = {};var markers=[];var pos=[];var d={};var mIMEI=[];
+                        					var map;
+                                   var path = {{ bus_co|safe }};
+                 function initMap() {
+                        var location = {lat:17.3920,lng:78.3194}
+                        map = new google.maps.Map(document.getElementById('map'), {
+                          zoom: 10,
+                          center: location
+                        });
+                        var markerc = new google.maps.Marker({
+                          map: map,
+                          position:location,
+                          icon:"{% static 'markers/pin1.png' %}",                   
+                        });
+                        myFunctinForListener = function(aMarker, aInfoWindow) {
+                          google.maps.event.addListener(aMarker, 'click', function() {                          
+                            aInfoWindow.open(map, aMarker);
+                          });
+                        }
+
+                                    //Fence
+									 var drawingManager = new google.maps.drawing.DrawingManager({
+                                              drawingControl: true,
+                                              drawingControlOptions: {
+                                                position: google.maps.ControlPosition.TOP_CENTER,
+                                                drawingModes: ['polyline']
+                                              }
+                                             });
+                                             //drawingManager.setMap(map);
+                                            var pathBetween1 = new google.maps.Polygon({
+                                              path: path,
+                                              strokeColor: '#4E73DF',
+                                              fillColor: '#4E73DF',
+                                              strokeOpacity: 0.8,
+                                              strokeWeight: 3,
+                                              fillOpacity: 0.2
+                                            });
+                                            pathBetween1.setMap(map);
+                                            var polylines = [];
+                                            google.maps.event.addListener(drawingManager, 'polylinecomplete', function(polyline) {
+                                              polylines.push(polyline);
+                                              var polylinePath = polyline.getPath();
+                                              for (var i = 0; i < polylinePath.getArray().length; i++) {
+                                                polyarray.push('{"lat":'+polylinePath.getArray()[i].lat() + ', "lng":' + polylinePath.getArray()[i].lng() + '}');
+                                              }
+                                            });
+                        						worker();
+                                          }
+                    </script>
+               <script async differ type="text/javascript" 
+                src="https://maps.googleapis.com/maps/api/js?key=AIzaSyArbAIIe2DNFzV8bWdqno7S-9UcZmMlkos&libraries=drawing&callback=initMap">
+                </script>
+            </div>
+        </div>
+    </div>
+
+    <!-- End of Main Content -->
+
+      <!-- Footer was here-->
+
+    </div>
+    <!-- End of Content Wrapper -->
+
+  </div>
+  <!-- End of Page Wrapper -->
+
+
+    
+{%endblock%}
